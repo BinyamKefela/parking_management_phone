@@ -10,6 +10,12 @@ android {
     compileSdk = flutter.compileSdkVersion
     //ndkVersion = flutter.ndkVersion
     ndkVersion = "25.1.8937393"
+    defaultConfig {
+        applicationId "com.example.parking_management"
+        minSdkVersion 21
+        targetSdkVersion 34
+        
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

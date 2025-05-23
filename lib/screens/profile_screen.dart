@@ -132,7 +132,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onTap: () async {
                       final sp = await SharedPreferences.getInstance();
                       sp.remove("access_token");
-                      Navigator.of(context).push(MaterialPageRoute(
+                      sp.remove("refresh_token");
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => LoginScreen()));
                     },
                     leading: const Icon(

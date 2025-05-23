@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parking_management/logic/authentication.dart';
 import 'package:parking_management/screens/location_permission_screen.dart';
 import 'package:parking_management/screens/login_screen.dart';
 import 'package:parking_management/screens/zone_details.dart';
@@ -21,27 +22,28 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _handleStartupLogic() async {
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 1));
+    PermissionStatus locationStatus = await Permission.location.status;
+    if (!locationStatus.isGranted) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LocationPermissionScreen()));
+    } 
 
     final prefs = await SharedPreferences.getInstance();
     bool _isLoggedIn = prefs.getBool("is_logged_in") ?? false;
 
+    //print('shared stuff' + prefs.getString("access")!);
     if (!_isLoggedIn) {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => LoginScreen()));
       return;
     }
-
-    PermissionStatus locationStatus = await Permission.location.status;
-    if (!locationStatus.isGranted) {
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LocationPermissionScreen()));
-    }
-    else{
+    else {
+      getValidToken();
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ZoneDetails()));
-
     }
+    
   }
 
   @override

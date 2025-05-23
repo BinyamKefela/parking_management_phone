@@ -5,6 +5,10 @@
         android:label="parking management"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA5bX-4i3D_-U2avNoGk2QP5DyolGJI6Pg" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

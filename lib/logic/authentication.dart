@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 String backend_url = dotenv.env['backend_url']!.toString();
 
@@ -22,11 +26,34 @@ Future<Response> resetPasswordPhone(email, code) {
       body: {"email": email});
 }
 
-
 //an API for registering a user
 Future<Response> signUp(email, password) {
-  return http.post(Uri.parse(backend_url + r"/api/signup"),body: {
-    "email":email,
-    "password":password
-  });
+  return http.post(Uri.parse(backend_url + r"/api/sign_up"),
+      body: {"email": email, "password": password});
+}
+
+void refreshToken() async {
+  final prefs = await SharedPreferences.getInstance();
+  //final token = prefs.getString("access_token");
+  final refresh = prefs.getString("refresh_token");
+  final response = await http.post(
+      Uri.parse(backend_url + r"/api/token/refresh"),
+      body: {"refresh": refresh});
+  if (response.statusCode == 200) {
+    final responseData = json.decode(response.body);
+    await prefs.setString("access_token", responseData["access"]);
+    await prefs.setString("refresh_token", responseData["refresh"]);
+  }
+}
+
+void getValidToken() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString("access_token");
+  //final refresh = prefs.getString("refresh_token");
+  if (token == null) {
+    return null;
+  }
+  if (JwtDecoder.isExpired(token)) {
+    refreshToken();
+  }
 }

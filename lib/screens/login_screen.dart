@@ -13,7 +13,7 @@ import 'register_screen.dart'; // Ensure this import matches your file structure
 
 class LoginScreen extends StatefulWidget {
   String? message;
-  LoginScreen({super.key,this.message});
+  LoginScreen({super.key, this.message});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(widget.message??""),
+                            Text(widget.message ?? ""),
                             SizedBox(height: 20.0.h),
                             const Text(
                               "Email",
@@ -240,11 +240,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                           json.decode(response.body);
                                       final access_token =
                                           responseData['access'];
+                                      final refresh_token =
+                                          responseData['refresh'];
+
                                       final prefs =
                                           await SharedPreferences.getInstance();
                                       await prefs.setBool("is_logged_in", true);
                                       await prefs.setString(
                                           'access_token', access_token);
+                                      await prefs.setString(
+                                          'refresh_token', refresh_token);
+
+                                      print("after login " +
+                                          prefs.getString('access_token')!);
+
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (context) =>
