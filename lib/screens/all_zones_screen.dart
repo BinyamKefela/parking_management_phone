@@ -5,25 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:parking_management/logic/end_points.dart';
-import 'package:parking_management/screens/all_zones_screen.dart';
 import 'package:parking_management/screens/bookmarks_screen.dart';
 import 'package:parking_management/screens/components/zone_card.dart';
 import 'package:parking_management/screens/favorites_screen.dart';
 import 'package:parking_management/screens/profile_screen.dart';
 import 'package:latlong2/latlong.dart' as ll;
 
-class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+class AllZones extends StatefulWidget {
+  const AllZones({super.key});
 
   @override
-  State<MapScreen> createState() => _MapScreenState();
+  State<AllZones> createState() => _AllZonesState();
 }
 
-class _MapScreenState extends State<MapScreen> {
-  String _parkingNearYou = "Parking near you";
-  late GoogleMapController _controller;
+class _AllZonesState extends State<AllZones> {
   final Location _location = Location();
-  late LatLng _currentPosition;
+  late ll.LatLng _currentPosition;
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
   int _currentIndex = 0;
@@ -34,7 +31,6 @@ class _MapScreenState extends State<MapScreen> {
     const ProfileScreen(),
     const BookmarkScreen(),
   ];
-  String? _distance;
 
   final List<dynamic> _predefinedLocations = [];
   final List<dynamic> _nearestLocations = [];
@@ -46,21 +42,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _initialize() async {
-    await _getLocation();
+    //await _getLocation();
     await _getParkingZones();
-    _getTopThreeNearestZones();
-  }
-
-  Future<void> _getLocation() async {
-    if (!(await _location.serviceEnabled()) &&
-        !(await _location.requestService())) return;
-
-    final locationData = await _location.getLocation();
-    setState(() {
-      _currentPosition =
-          LatLng(locationData.latitude!, locationData.longitude!);
-      _isLoading = false;
-    });
+    _getAllZones();
   }
 
   Future<void> _getParkingZones() async {
@@ -77,23 +61,13 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<String> _calculateDistance(double destLat, double destLng) async {
-    final userLocation = await _location.getLocation();
-    final distance = ll.Distance().as(
-      ll.LengthUnit.Meter,
-      ll.LatLng(userLocation.latitude!, userLocation.longitude!),
-      ll.LatLng(destLat, destLng),
-    );
-
-    return distance < 1000
-        ? 'Distance: ${distance.toStringAsFixed(0)} meters'
-        : 'Distance: ${(distance / 1000).toStringAsFixed(2)} km';
-  }
-
-  void _getTopThreeNearestZones() async {
+  void _getAllZones() async {
     final userLocation = await _location.getLocation();
     final userLatLng =
         ll.LatLng(userLocation.latitude!, userLocation.longitude!);
+    setState(() {
+      _currentPosition = ll.LatLng(userLocation.latitude!, userLocation.longitude!);
+    });
     final distance = ll.Distance();
 
     final zonesWithDistance = _predefinedLocations.map((zone) {
@@ -110,12 +84,9 @@ class _MapScreenState extends State<MapScreen> {
 
     setState(() {
       _nearestLocations.clear();
-      _nearestLocations.addAll(zonesWithDistance.take(5));
+      _nearestLocations.addAll(zonesWithDistance);
+      _isLoading = false;
     });
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    _controller = controller;
   }
 
   void _onSearchChanged(String query) {
@@ -125,16 +96,11 @@ class _MapScreenState extends State<MapScreen> {
 
     if (query.trim().isEmpty) {
       // Recalculate the nearest zones if search is cleared
-      _getTopThreeNearestZones();
-      setState(() {
-        _parkingNearYou = "Parking near you";
-      });
+      _getAllZones();
+
       return;
     }
 
-    setState(() {
-      _parkingNearYou = "search results";
-    });
     final filtered = _predefinedLocations.where((zone) {
       final name = zone['name']?.toString().toLowerCase() ?? '';
       final address = zone['address']?.toString().toLowerCase() ?? '';
@@ -221,55 +187,7 @@ class _MapScreenState extends State<MapScreen> {
                               ),
                             ),
                           ),
-                          Expanded(
-                            child: GoogleMap(
-                              initialCameraPosition: CameraPosition(
-                                  target: _currentPosition, zoom: 10),
-                              onMapCreated: _onMapCreated,
-                              myLocationEnabled: true,
-                              myLocationButtonEnabled: true,
-                              markers: _predefinedLocations.map((zone) {
-                                final lat = double.parse(zone['latitude']);
-                                final lng = double.parse(zone['longitude']);
-                                return Marker(
-                                  markerId: MarkerId(zone['id'].toString()),
-                                  position: LatLng(lat, lng),
-                                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                                      BitmapDescriptor.hueAzure),
-                                  onTap: () async {
-                                    final distance =
-                                        await _calculateDistance(lat, lng);
-                                    setState(() => _distance = distance);
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.noHeader,
-                                      title: "Zone",
-                                      desc: _distance,
-                                    ).show();
-                                  },
-                                );
-                              }).toSet(),
-                            ),
-                          ),
                           const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(_parkingNearYou,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              InkWell(
-                                onTap: () {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (builder) => const AllZones()));
-                                },
-                                child: const Text("View all",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue)),
-                              ),
-                            ],
-                          ),
                           Expanded(
                             child: ListView.builder(
                               itemCount: _nearestLocations.length,
