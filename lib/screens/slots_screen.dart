@@ -7,8 +7,8 @@ import 'package:parking_management/screens/components/slot_grid.dart';
 
 // Ensure this import matches your file structure
 class SlotScreen extends StatefulWidget {
-  final List<dynamic> parkingZones;
-  const SlotScreen({super.key, required this.parkingZones});
+  final Map<dynamic, dynamic> zone;
+  const SlotScreen({super.key, required this.zone});
 
   @override
   State<SlotScreen> createState() => _SlotScreenState();
@@ -17,7 +17,7 @@ class SlotScreen extends StatefulWidget {
 class _SlotScreenState extends State<SlotScreen> {
   int _currentIndex = 0;
   int _selectedIndex = -1;
-  String? _dropdownValue = "A";
+  String? _dropdownValue;
   int _floorIndex = 0;
   String _selectedGroup = "";
   final List<String> _selectedSlots = [];
@@ -25,7 +25,26 @@ class _SlotScreenState extends State<SlotScreen> {
   @override
   void initState() {
     super.initState();
-    print("SlotScreen loaded with: ${widget.parkingZones.length} zones");
+    print(
+        "SlotScreen loaded with: ${widget.zone['parking_floors'].length} floors");
+    if (widget.zone['parking_floors'] != null &&
+        widget.zone['parking_floors'].isNotEmpty &&
+        widget.zone['parking_floors'][_floorIndex] != null &&
+        widget.zone['parking_floors'][_floorIndex]['parking_slot_groups'] !=
+            null &&
+        widget.zone['parking_floors'][_floorIndex]['parking_slot_groups']
+            .isNotEmpty) {
+      setState(() {
+        _dropdownValue = widget.zone['parking_floors'][_floorIndex]
+                ['parking_slot_groups'][0]['id']
+            .toString();
+      });
+    } else {
+      // Fallback if no groups exist
+      setState(() {
+        _dropdownValue = null;
+      });
+    }
   }
 
   void _cancelPayment(BuildContext context) {
@@ -131,7 +150,9 @@ class _SlotScreenState extends State<SlotScreen> {
                                               const NeverScrollableScrollPhysics(),
                                           scrollDirection: Axis.horizontal,
                                           crossAxisCount: 1,
-                                          children: List.generate(5, (index) {
+                                          children: List.generate(
+                                              widget.zone['parking_floors']
+                                                  .length, (index) {
                                             return InkWell(
                                                 onTap: () {
                                                   _handleFloorClicked(index);
@@ -154,7 +175,12 @@ class _SlotScreenState extends State<SlotScreen> {
                                                                     253)
                                                                 : null),
                                                     child: Text(
-                                                      "floor ${index}",
+                                                      r'floor ' +
+                                                          widget.zone[
+                                                                  'parking_floors']
+                                                                  [index][
+                                                                  'floor_number']
+                                                              .toString(),
                                                       style: const TextStyle(
                                                           fontSize: 10),
                                                     )));
@@ -177,12 +203,34 @@ class _SlotScreenState extends State<SlotScreen> {
                                       width: 0.1,
                                       color: Colors.transparent,
                                     ),
-                                    items: const [
-                                      DropdownMenuItem<String>(
-                                          value: "A", child: Text("A")),
-                                      DropdownMenuItem<String>(
-                                          value: "B", child: Text("B"))
-                                    ],
+                                    items: (widget.zone['parking_floors'] !=
+                                                null &&
+                                            widget.zone['parking_floors']
+                                                .isNotEmpty &&
+                                            widget.zone['parking_floors']
+                                                    [_floorIndex] !=
+                                                null &&
+                                            widget.zone['parking_floors']
+                                                        [_floorIndex]
+                                                    ['parking_slot_groups'] !=
+                                                null &&
+                                            widget
+                                                .zone['parking_floors']
+                                                    [_floorIndex]
+                                                    ['parking_slot_groups']
+                                                .isNotEmpty)
+                                        ? widget.zone['parking_floors']
+                                                [_floorIndex]
+                                                ['parking_slot_groups']
+                                            .map<DropdownMenuItem<String>>(
+                                                (group) {
+                                            return DropdownMenuItem<String>(
+                                              value: group['id']
+                                                  .toString(), // Convert id to String since your dropdown is String-based
+                                              child: Text(group['name']),
+                                            );
+                                          }).toList()
+                                        : [],
                                     onChanged: (String? newValue) {
                                       setState(() {
                                         _dropdownValue = newValue;
@@ -200,8 +248,8 @@ class _SlotScreenState extends State<SlotScreen> {
                       crossAxisCount: 1,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      children:
-                          List.generate(widget.parkingZones.length, (index) {
+                      children: List.generate(
+                          widget.zone['parking_floors'].length, (index) {
                         return Column(
                           children: [
                             SlotGrid(

@@ -38,9 +38,9 @@ class MyApp extends StatelessWidget {
             ), // Force AppBar color
           ),
         ),
-        home:MapScreen() 
+        home://MapScreen() 
         //const ProfileScreen()
-            //const SplashScreen()
+            const SplashScreen()
         //const LocationPermissionScreen()
         //const ZoneDetails(),
         );

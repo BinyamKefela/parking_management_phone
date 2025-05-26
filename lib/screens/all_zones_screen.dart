@@ -10,6 +10,7 @@ import 'package:parking_management/screens/components/zone_card.dart';
 import 'package:parking_management/screens/favorites_screen.dart';
 import 'package:parking_management/screens/profile_screen.dart';
 import 'package:latlong2/latlong.dart' as ll;
+import 'dart:async';
 
 class AllZones extends StatefulWidget {
   const AllZones({super.key});
@@ -24,6 +25,7 @@ class _AllZonesState extends State<AllZones> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
   int _currentIndex = 0;
+  Timer? _timer;
   final List<Widget> _pages = [
     const Text("Hello"),
     const FavoritesScreen(),
@@ -45,6 +47,18 @@ class _AllZonesState extends State<AllZones> {
     //await _getLocation();
     await _getParkingZones();
     _getAllZones();
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+      print('Polling for data...');
+      await _getParkingZones();
+      await _getParkingZones();
+      _getAllZones();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> _getParkingZones() async {
@@ -66,7 +80,8 @@ class _AllZonesState extends State<AllZones> {
     final userLatLng =
         ll.LatLng(userLocation.latitude!, userLocation.longitude!);
     setState(() {
-      _currentPosition = ll.LatLng(userLocation.latitude!, userLocation.longitude!);
+      _currentPosition =
+          ll.LatLng(userLocation.latitude!, userLocation.longitude!);
     });
     final distance = ll.Distance();
 
@@ -192,6 +207,7 @@ class _AllZonesState extends State<AllZones> {
                             child: ListView.builder(
                               itemCount: _nearestLocations.length,
                               itemBuilder: (context, index) => ZoneCard(
+                                  zone: _nearestLocations[index],
                                   address: _nearestLocations[index]['address']
                                       .toString(),
                                   timeDistance: (_nearestLocations[index]

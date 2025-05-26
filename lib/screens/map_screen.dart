@@ -11,6 +11,8 @@ import 'package:parking_management/screens/components/zone_card.dart';
 import 'package:parking_management/screens/favorites_screen.dart';
 import 'package:parking_management/screens/profile_screen.dart';
 import 'package:latlong2/latlong.dart' as ll;
+import 'package:parking_management/screens/zone_details.dart';
+import 'dart:async';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -35,6 +37,7 @@ class _MapScreenState extends State<MapScreen> {
     const BookmarkScreen(),
   ];
   String? _distance;
+  Timer? _timer;
 
   final List<dynamic> _predefinedLocations = [];
   final List<dynamic> _nearestLocations = [];
@@ -48,7 +51,19 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _initialize() async {
     await _getLocation();
     await _getParkingZones();
-    _getTopThreeNearestZones();
+    await _getTopThreeNearestZones();
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+      print('Polling for data...');
+      await _getLocation();
+      await _getParkingZones();
+      await _getTopThreeNearestZones();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> _getLocation() async {
@@ -59,7 +74,6 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _currentPosition =
           LatLng(locationData.latitude!, locationData.longitude!);
-      _isLoading = false;
     });
   }
 
@@ -69,6 +83,7 @@ class _MapScreenState extends State<MapScreen> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         setState(() {
+          _predefinedLocations.clear();
           _predefinedLocations.addAll(responseData['data']);
         });
       }
@@ -90,7 +105,7 @@ class _MapScreenState extends State<MapScreen> {
         : 'Distance: ${(distance / 1000).toStringAsFixed(2)} km';
   }
 
-  void _getTopThreeNearestZones() async {
+  Future<void> _getTopThreeNearestZones() async {
     final userLocation = await _location.getLocation();
     final userLatLng =
         ll.LatLng(userLocation.latitude!, userLocation.longitude!);
@@ -111,6 +126,9 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _nearestLocations.clear();
       _nearestLocations.addAll(zonesWithDistance.take(5));
+      _predefinedLocations.clear();
+      _predefinedLocations.addAll(zonesWithDistance);
+      _isLoading = false;
     });
   }
 
@@ -237,15 +255,119 @@ class _MapScreenState extends State<MapScreen> {
                                   icon: BitmapDescriptor.defaultMarkerWithHue(
                                       BitmapDescriptor.hueAzure),
                                   onTap: () async {
-                                    final distance =
-                                        await _calculateDistance(lat, lng);
-                                    setState(() => _distance = distance);
+                                    print(r"yeah man" + zone.toString());
                                     AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.noHeader,
-                                      title: "Zone",
-                                      desc: _distance,
-                                    ).show();
+                                        context: context,
+                                        dialogType: DialogType.noHeader,
+                                        title: "Zone",
+                                        desc: _distance,
+                                        body: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(1.0),
+                                            child: Column(
+                                              children: [
+                                                ZoneCard(
+                                                    zone: zone,
+                                                    address: zone['address']
+                                                        .toString(),
+                                                    timeDistance:
+                                                        (zone['distance'] / 60)
+                                                                .toStringAsFixed(
+                                                                    2) +
+                                                            r'min',
+                                                    distance:
+                                                        ((zone['distance'] /
+                                                                    1000)
+                                                                .toStringAsFixed(
+                                                                    2) +
+                                                            r" km"),
+                                                    name: zone['name']
+                                                        .toString()),
+                                                Container(
+                                                  width: 350,
+                                                  child: Card(
+                                                    elevation: 5,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              12.0),
+                                                      child: Column(
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                "zone name:    ",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .blue),
+                                                              ),
+                                                              Text(zone['name'])
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                  "address:     ",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .blue)),
+                                                              Text(zone[
+                                                                  'address'])
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                  "distance:     ",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .blue)),
+                                                              Text((zone['distance'] /
+                                                                          60)
+                                                                      .toStringAsFixed(
+                                                                          2) +
+                                                                  r'min')
+                                                            ],
+                                                          ),
+                                                          Container(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .topLeft,
+                                                              child:
+                                                                  ElevatedButton(
+                                                                      style: ElevatedButton
+                                                                          .styleFrom(
+                                                                        backgroundColor: const Color
+                                                                            .fromRGBO(
+                                                                            59,
+                                                                            110,
+                                                                            143,
+                                                                            1),
+                                                                      ),
+                                                                      onPressed:
+                                                                          () {
+                                                                        Navigator.of(context).push(MaterialPageRoute(
+                                                                            builder: (builder) => ZoneDetails(
+                                                                                zone: zone,
+                                                                                address: zone['address'].toString(),
+                                                                                timeDistance: (zone['distance'] / 60).toStringAsFixed(2) + r'min',
+                                                                                distance: ((zone['distance'] / 1000).toStringAsFixed(2) + r" km"),
+                                                                                name: zone['name'].toString())));
+                                                                      },
+                                                                      child: const Text(
+                                                                          "book",
+                                                                          style:
+                                                                              TextStyle(color: Colors.white))))
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        )).show();
                                   },
                                 );
                               }).toSet(),
@@ -274,6 +396,7 @@ class _MapScreenState extends State<MapScreen> {
                             child: ListView.builder(
                               itemCount: _nearestLocations.length,
                               itemBuilder: (context, index) => ZoneCard(
+                                  zone: _nearestLocations[index],
                                   address: _nearestLocations[index]['address']
                                       .toString(),
                                   timeDistance: (_nearestLocations[index]

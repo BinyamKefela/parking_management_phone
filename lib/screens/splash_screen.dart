@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:parking_management/logic/authentication.dart';
 import 'package:parking_management/screens/location_permission_screen.dart';
 import 'package:parking_management/screens/login_screen.dart';
+import 'package:parking_management/screens/map_screen.dart';
 import 'package:parking_management/screens/zone_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -41,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
     else {
       getValidToken();
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ZoneDetails()));
+          MaterialPageRoute(builder: (_) => const MapScreen()));
     }
     
   }

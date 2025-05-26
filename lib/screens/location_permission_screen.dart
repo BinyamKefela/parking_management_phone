@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:parking_management/screens/map_screen.dart';
 import 'package:parking_management/screens/zone_details.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -22,7 +23,7 @@ class _LocationPermissionScreenState extends State<LocationPermissionScreen>
     if (status.isGranted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const ZoneDetails()),
+        MaterialPageRoute(builder: (_) => const MapScreen()),
       );
     }
   }

@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:parking_management/screens/zone_details.dart';
 
 class ZoneCard extends StatefulWidget {
@@ -8,14 +6,16 @@ class ZoneCard extends StatefulWidget {
   final String address; // = "somewhere";
   final String timeDistance; // = "30 minutes";
   final String distance; // = "2km";
-  final String name; // = "some name";
+  final String name;
+  final Map<dynamic, dynamic> zone; // = "some name";
 
-  const ZoneCard(
+  ZoneCard(
       {super.key,
       required this.address,
       required this.timeDistance,
       required this.distance,
-      required this.name});
+      required this.name,
+      required this.zone});
 
   @override
   State<ZoneCard> createState() => _ZoneCardState();
@@ -26,8 +26,14 @@ class _ZoneCardState extends State<ZoneCard> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (builder) => const ZoneDetails()));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (builder) => ZoneDetails(
+                  zone: widget.zone,
+                  address: widget.address,
+                  timeDistance: widget.timeDistance,
+                  distance: widget.distance,
+                  name: widget.name,
+                )));
       },
       child: Card(
         elevation: 5,
@@ -47,7 +53,7 @@ class _ZoneCardState extends State<ZoneCard> {
               ),
             ),
             Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               height: 130,
               width: 200,
               child: Column(

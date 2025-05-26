@@ -17,7 +17,22 @@ import 'register_screen.dart';
 import 'package:infinite_carousel/infinite_carousel.dart';
 
 class ZoneDetails extends StatefulWidget {
-  const ZoneDetails({super.key});
+  final String slotAvailable = "30";
+  final String address; // = "somewhere";
+  final String timeDistance; // = "30 minutes";
+  final String distance; // = "2km";
+  final String name; // = "some name";
+  final Map<dynamic, dynamic> zone;
+
+  ZoneDetails(
+      {super.key,
+      required this.address,
+      required this.timeDistance,
+      required this.distance,
+      required this.name,
+      required this.zone});
+
+  //const ZoneDetails({super.key});
 
   @override
   State<ZoneDetails> createState() => _ZoneDetailsState();
@@ -26,7 +41,7 @@ class ZoneDetails extends StatefulWidget {
 class _ZoneDetailsState extends State<ZoneDetails> {
   List<Widget> _pages = [];
   final List<dynamic> _parkingZones = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _hasError = false;
   String _errorMessage = "";
 
@@ -45,34 +60,6 @@ class _ZoneDetailsState extends State<ZoneDetails> {
     _pages.add(const ProfileScreen());
     _pages.add(const ProfileScreen());
     _pages.add(const BookmarkScreen());
-
-    getParkingZonesView();
-  }
-
-  void getParkingZonesView() async {
-    try {
-      final response = await getParkingZones();
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        print(r'parking zones' + response.body);
-        setState(() {
-          _parkingZones.clear();
-          _parkingZones.addAll(responseData["data"]);
-          _isLoading = false;
-          _hasError = false;
-        });
-      } else {
-        throw Exception("Server error: ${response.statusCode}");
-      }
-    } catch (exception) {
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage =
-            exception.toString();
-      });
-    }
   }
 
   @override
@@ -114,7 +101,6 @@ class _ZoneDetailsState extends State<ZoneDetails> {
                                 _isLoading = true;
                                 _hasError = false;
                               });
-                              getParkingZonesView(); // Retry
                             },
                             child: const Text('Retry'),
                           )
@@ -186,9 +172,8 @@ class _ZoneDetailsState extends State<ZoneDetails> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              const Text("Megenagna"),
-                                              const Text(
-                                                  "city mall infront of zefmesh"),
+                                              Text(widget.zone['name']),
+                                              Text(widget.zone['address']),
                                               Container(
                                                 margin:
                                                     const EdgeInsets.fromLTRB(
@@ -236,16 +221,20 @@ class _ZoneDetailsState extends State<ZoneDetails> {
                                                 margin:
                                                     const EdgeInsets.fromLTRB(
                                                         0, 0, 0, 0),
-                                                child: const Column(
+                                                child: Column(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
                                                             .center,
                                                     children: [
-                                                      Icon(Icons
+                                                      const Icon(Icons
                                                           .timelapse_rounded),
                                                       Text(
-                                                        "4 min from your location",
-                                                        style: TextStyle(
+                                                        (widget.zone['distance'] /
+                                                                    60)
+                                                                .toStringAsFixed(
+                                                                    2) +
+                                                            r'min',
+                                                        style: const TextStyle(
                                                             fontSize: 10),
                                                       )
                                                     ]))),
@@ -254,18 +243,25 @@ class _ZoneDetailsState extends State<ZoneDetails> {
                                             child: Container(
                                                 height: 80.0,
                                                 width: 100.0,
-                                                padding: EdgeInsets.all(10.0),
-                                                margin: EdgeInsets.fromLTRB(
-                                                    0, 0, 0, 0),
-                                                child: const Column(
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                margin:
+                                                    const EdgeInsets.fromLTRB(
+                                                        0, 0, 0, 0),
+                                                child: Column(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
                                                             .center,
                                                     children: [
-                                                      Icon(Icons.timelapse),
+                                                      const Icon(
+                                                          Icons.timelapse),
                                                       Text(
-                                                        "2.5 km from your location",
-                                                        style: TextStyle(
+                                                        ((widget.zone['distance'] /
+                                                                    1000)
+                                                                .toStringAsFixed(
+                                                                    2) +
+                                                            r" km"),
+                                                        style: const TextStyle(
                                                             fontSize: 10),
                                                       )
                                                     ])))
@@ -340,7 +336,7 @@ class _ZoneDetailsState extends State<ZoneDetails> {
                               ),
                               onPressed: () {
                                 print(_parkingZones.toString());
-                                if (_parkingZones.isEmpty) {
+                                if (widget.zone.isEmpty) {
                                   AwesomeDialog(
                                     context: context,
                                     dialogType: DialogType.warning,
@@ -354,7 +350,7 @@ class _ZoneDetailsState extends State<ZoneDetails> {
                                 Navigator.of(context)
                                     .push(MaterialPageRoute(builder: (context) {
                                   return SlotScreen(
-                                      parkingZones: _parkingZones);
+                                      zone: widget.zone);
                                 }));
                               },
                               child: const Text("select slot")),

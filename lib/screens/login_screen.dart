@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:http/http.dart' as http;
 import 'package:parking_management/screens/forgot_password.dart';
+import 'package:parking_management/screens/map_screen.dart';
 import 'package:parking_management/screens/zone_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -254,10 +255,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       print("after login " +
                                           prefs.getString('access_token')!);
 
-                                      Navigator.of(context).push(
+                                      Navigator.of(context).pushReplacement(
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  ZoneDetails()));
+                                                  const MapScreen()));
                                     } else {
                                       final responseData =
                                           json.decode(response.body);
