@@ -55,11 +55,21 @@ class _ZoneDetailsState extends State<ZoneDetails> {
   @override
   void initState() {
     super.initState();
+    print(r"zone at zone details " + widget.zone.toString());
     _pages.add(const Text("Hello"));
     _pages.add(const FavoritesScreen());
     _pages.add(const ProfileScreen());
     _pages.add(const ProfileScreen());
     _pages.add(const BookmarkScreen());
+
+    /*setState(() {
+      images.clear();
+    for (var item in widget.zone["parking_zone_pictures"]) {
+      images.add(item["image"]);
+    }
+    });*/
+    
+    //images.addAll(widget.zone['parking_zone_pctures'].toList());
   }
 
   @override
@@ -347,10 +357,11 @@ class _ZoneDetailsState extends State<ZoneDetails> {
                                   ).show();
                                   return;
                                 }
+                                print(r"data sent to slotscreen " +
+                                    widget.zone.toString());
                                 Navigator.of(context)
                                     .push(MaterialPageRoute(builder: (context) {
-                                  return SlotScreen(
-                                      zone: widget.zone);
+                                  return SlotScreen(zone: widget.zone);
                                 }));
                               },
                               child: const Text("select slot")),

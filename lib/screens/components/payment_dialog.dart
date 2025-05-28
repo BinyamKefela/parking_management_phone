@@ -5,13 +5,44 @@ import 'package:flutter/widgets.dart';
 
 class PaymentDialog extends StatefulWidget {
   final VoidCallback onCancel;
-  const PaymentDialog({super.key, required this.onCancel});
+  final String name;
+  final String address;
+  final String floorNumber;
+  final String slotName;
+  final String slotGroup;
+  final int selectedSlotId;
+
+  const PaymentDialog(
+      {super.key,
+      required this.onCancel,
+      required this.name,
+      required this.address,
+      required this.floorNumber,
+      required this.slotName,
+      required this.slotGroup,
+      required this.selectedSlotId});
 
   @override
   State<PaymentDialog> createState() => _PaymentDialogState();
 }
 
 class _PaymentDialogState extends State<PaymentDialog> {
+  TimeOfDay _arrivalTime = TimeOfDay.now();
+  TimeOfDay? _leaveTime;
+
+  TimeOfDay addOneHour(TimeOfDay time) {
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    final newDt = dt.add(const Duration(hours: 1));
+    return TimeOfDay(hour: newDt.hour, minute: newDt.minute);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _leaveTime = addOneHour(TimeOfDay.now());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -22,18 +53,19 @@ class _PaymentDialogState extends State<PaymentDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Column(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Megenagna",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text("city mall infront of zefmesh",
-                        style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    Text("Br 20 per hour",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text("3rd floor",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(widget.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(widget.address,
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(r"slot group " + widget.slotGroup,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(r'floor number ' + widget.floorNumber,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
                 Card(
@@ -46,13 +78,14 @@ class _PaymentDialogState extends State<PaymentDialog> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
-                            "A-09",
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                          Text(
+                            widget.slotName,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 10),
                           ),
                           Container(
-                            margin: EdgeInsets.fromLTRB(25, 20, 0, 0),
-                            child: Text("4X2",
+                            margin: const EdgeInsets.fromLTRB(25, 20, 0, 0),
+                            child: const Text('slot',
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 8)),
                           )
@@ -70,41 +103,83 @@ class _PaymentDialogState extends State<PaymentDialog> {
                   borderRadius: BorderRadius.circular(20),
                   color: const Color.fromRGBO(229, 237, 245, 1)),
               width: double.infinity,
-              child: const Row(
+              child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [Text("25/2/7"), Icon(Icons.calendar_month)]),
+                  children: [
+                    Text(DateTime.now().year.toString() +
+                        r'/' +
+                        DateTime.now().month.toString() +
+                        r"/" +
+                        DateTime.now().day.toString()),
+                    const Icon(Icons.calendar_month)
+                  ]),
             ),
             Container(
               margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: 120,
-                    padding: EdgeInsets.all(8),
-                    margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Color.fromRGBO(229, 237, 245, 1)),
-                    child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [Text("arrive"), Text("03:00")]),
+                  GestureDetector(
+                    onTap: () async {
+                      final TimeOfDay? picked = await showTimePicker(
+                          context: context, initialTime: _arrivalTime);
+
+                      if (picked != null) {
+                        setState(() {
+                          _arrivalTime = picked;
+                        });
+                      }
+                    },
+                    child: Container(
+                      width: 120,
+                      padding: EdgeInsets.all(8),
+                      margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Color.fromRGBO(229, 237, 245, 1)),
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "select arrival time",
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(_arrivalTime.format(context))
+                          ]),
+                    ),
                   ),
-                  Container(
-                    width: 120,
-                    padding: EdgeInsets.all(8),
-                    margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Color.fromRGBO(229, 237, 245, 1)),
-                    child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [Text("leave"), Text("05:00")]),
+                  GestureDetector(
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                          context: context, initialTime: _leaveTime!);
+                      if (picked != null) {
+                        setState(() {
+                          _leaveTime = picked;
+                        });
+                      }
+                    },
+                    child: Container(
+                      width: 120,
+                      padding: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: const Color.fromRGBO(229, 237, 245, 1)),
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "select leave time",
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(_leaveTime!.format(context))
+                          ]),
+                    ),
                   )
                 ],
               ),
             ),
-            Container(
+            /*Container(
               padding: const EdgeInsets.all(15),
               margin: const EdgeInsets.fromLTRB(0, 25, 0, 0),
               decoration: BoxDecoration(
@@ -114,7 +189,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
               child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [Text("subtotal"), Text("40 Br")]),
-            ),
+            ),*/
             Container(
                 width: double.infinity,
                 margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),

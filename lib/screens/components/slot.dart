@@ -3,9 +3,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 // Ensure this import matches your file structure
 class Slot extends StatefulWidget {
-  const Slot({super.key, this.index = 0, this.isSelected = false});
+  const Slot({super.key, this.index = 0, this.isSelected = false, this.slot});
   final int index;
   final bool isSelected;
+  final dynamic slot;
 
   @override
   State<Slot> createState() => _SlotState();
@@ -34,7 +35,9 @@ class _SlotState extends State<Slot> {
                 margin: const EdgeInsets.fromLTRB(0, 7, 5, 0),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
-                    color: Colors.green),
+                    color: widget.slot['is_available']
+                        ? Colors.green
+                        : Colors.blue),
                 height: 10,
                 width: 10,
                 // margin: EdgeInsets.fromLTRB(  //Removed this margin
@@ -43,7 +46,7 @@ class _SlotState extends State<Slot> {
               Container(
                   margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                   alignment: Alignment.topCenter,
-                  child: Text("A-01",
+                  child: Text(widget.slot['slot_number'],
                       style: TextStyle(
                           fontSize: 10,
                           color: widget.isSelected
@@ -55,9 +58,18 @@ class _SlotState extends State<Slot> {
               Center(
                 child: Container(
                     height: 15,
-                    width: 15,
-                    child: Image.asset(
-                        "assets/images/image.jpg")), //SvgPicture.asset(
+                    width: 30,
+                    child: widget.slot['is_available']
+                        ? Text(
+                            "available",
+                            style: TextStyle(
+                                fontSize: 7,
+                                color: widget.isSelected
+                                    ? Colors.white
+                                    : Colors.black),
+                          )
+                        : Image.asset(
+                            "assets/images/image.jpg")), //SvgPicture.asset(
                 //"assets/images/booked_slot.svg",
               ),
               Container(

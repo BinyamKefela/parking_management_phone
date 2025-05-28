@@ -51,7 +51,7 @@ class _AllZonesState extends State<AllZones> {
       print('Polling for data...');
       await _getParkingZones();
       await _getParkingZones();
-      _getAllZones();
+      await _getAllZones();
     });
   }
 
@@ -67,6 +67,7 @@ class _AllZonesState extends State<AllZones> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         setState(() {
+          _predefinedLocations.clear();
           _predefinedLocations.addAll(responseData['data']);
         });
       }
@@ -75,7 +76,7 @@ class _AllZonesState extends State<AllZones> {
     }
   }
 
-  void _getAllZones() async {
+  Future<void> _getAllZones() async {
     final userLocation = await _location.getLocation();
     final userLatLng =
         ll.LatLng(userLocation.latitude!, userLocation.longitude!);

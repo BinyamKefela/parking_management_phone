@@ -14,3 +14,31 @@ Future<Response> getParkingZones() async {
     'Authorization': 'Bearer $access',
   }).timeout(const Duration(seconds: 10));
 }
+
+Future<Response> postBooking(int parking_slot,int vehicle,DateTime start_time,DateTime? end_time) async {
+  final sp = await SharedPreferences.getInstance();
+  String access = sp.getString("access_token") ?? "";
+
+  return http.post(Uri.parse(backend_url + r"/api/post_booking"), headers: {
+    "Authorization": 'Bearer $access'
+  }, body: {
+    'parking_slot': parking_slot,
+    'vehicle':vehicle,
+    'start_time':start_time,
+    'end_time':end_time
+  }).timeout(const Duration(seconds: 10));
+}
+
+Future<Response> calculatePrice(int zone_id,int vehicle_type_id,DateTime start_time,DateTime end_time)async{
+  final sp = await SharedPreferences.getInstance();
+  String access = sp.getString("access_token") ?? "";
+
+  return http.post(Uri.parse(backend_url + r"/api/calculate_price"), headers: {
+    "Authorization": 'Bearer $access'
+  }, body: {
+    'zone_id': zone_id,
+    'vehicle_type_id':vehicle_type_id,
+    'start':start_time,
+    'end':end_time
+  }).timeout(const Duration(seconds: 10));
+}

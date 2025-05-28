@@ -21,6 +21,7 @@ class _SlotScreenState extends State<SlotScreen> {
   int _floorIndex = 0;
   String _selectedGroup = "";
   final List<String> _selectedSlots = [];
+  int _selectedSlotId = -1;
 
   @override
   void initState() {
@@ -36,7 +37,7 @@ class _SlotScreenState extends State<SlotScreen> {
             .isNotEmpty) {
       setState(() {
         _dropdownValue = widget.zone['parking_floors'][_floorIndex]
-                ['parking_slot_groups'][0]['id']
+                ['parking_slot_groups'][0]['name']
             .toString();
       });
     } else {
@@ -51,8 +52,9 @@ class _SlotScreenState extends State<SlotScreen> {
     Navigator.of(context).pop();
   }
 
-  void _handleSlotClicked(String index, int slot_index) {
+  void _handleSlotClicked(String index, int slot_index, int selected_slot_id) {
     setState(() {
+      _selectedSlotId = selected_slot_id;
       _selectedIndex = slot_index;
       _selectedGroup = index.toString();
       String slot = r'floor-' +
@@ -67,6 +69,7 @@ class _SlotScreenState extends State<SlotScreen> {
         _selectedSlots.clear();
         _selectedSlots.add(slot);
       }
+      print(r"final selected slot ID - " + _selectedSlotId.toString());
       print(_selectedSlots.toString());
     });
   }
@@ -77,6 +80,11 @@ class _SlotScreenState extends State<SlotScreen> {
       _floorIndex = index;
       _selectedGroup = "";
       _selectedIndex = -1;
+
+      _dropdownValue = widget.zone['parking_floors'][_floorIndex]
+              ['parking_slot_groups'][0]['name']
+          .toString();
+
       print(_selectedSlots.toString());
     });
   }
@@ -93,23 +101,6 @@ class _SlotScreenState extends State<SlotScreen> {
         foregroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.blue),
       ),
-      /*bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "home"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.favorite), label: "favorites"),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: "history"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "contact"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "settings")
-        ],
-      ),*/
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
@@ -117,6 +108,7 @@ class _SlotScreenState extends State<SlotScreen> {
             children: [
               Positioned.fill(
                   child: SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 250),
                 child: Column(
                   mainAxisAlignment:
                       MainAxisAlignment.start, // Changed to start
@@ -225,7 +217,7 @@ class _SlotScreenState extends State<SlotScreen> {
                                             .map<DropdownMenuItem<String>>(
                                                 (group) {
                                             return DropdownMenuItem<String>(
-                                              value: group['id']
+                                              value: group['name']
                                                   .toString(), // Convert id to String since your dropdown is String-based
                                               child: Text(group['name']),
                                             );
@@ -244,31 +236,14 @@ class _SlotScreenState extends State<SlotScreen> {
                     const SizedBox(
                       height: 10,
                     ),
-                    GridView.count(
-                      crossAxisCount: 1,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: List.generate(
-                          widget.zone['parking_floors'].length, (index) {
-                        return Column(
-                          children: [
-                            SlotGrid(
-                                key: ValueKey(index),
-                                groupIndex: index.toString(),
-                                groupSelected:
-                                    index.toString() == _selectedGroup,
-                                onSlotPressed: (slot_index) =>
-                                    _handleSlotClicked(
-                                        index.toString(), slot_index)),
-                            Container(
-                              margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
-                              height: 2,
-                              color: Colors.grey,
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
+                    SlotGrid(
+                        key: ValueKey(_floorIndex),
+                        floor: widget.zone['parking_floors'].length>0?widget.zone['parking_floors'][_floorIndex]:{},
+                        groupIndex: _dropdownValue ?? '',
+                        groupSelected: true,
+                        onSlotPressed: (slot_index, selected_slot_id) =>
+                            _handleSlotClicked(
+                                "1", slot_index, selected_slot_id))
                   ],
                 ),
               )),
@@ -296,6 +271,25 @@ class _SlotScreenState extends State<SlotScreen> {
                             removeRight: true,
                             child: SingleChildScrollView(
                                 child: PaymentDialog(
+                              selectedSlotId: _selectedSlotId,
+                              slotGroup: _dropdownValue ?? "",
+                              name: widget.zone['name'],
+                              address: widget.zone['address'],
+                              floorNumber: widget.zone['parking_floors']
+                                      [_floorIndex]['floor_number']
+                                  .toString(),
+                              slotName:
+                                  ((widget.zone['parking_floors'][_floorIndex]
+                                                          ['parking_slot_groups']
+                                                      as List)
+                                                  .firstWhere((psg) =>
+                                                      psg['name'] ==
+                                                      _dropdownValue)[
+                                              'parking_slots'] as List)
+                                          .firstWhere((ps) =>
+                                              ps['id'] ==
+                                              _selectedSlotId)['slot_number'] ??
+                                      "null",
                               onCancel: () => _cancelPayment(context),
                             )),
                           )).show();
