@@ -4,6 +4,7 @@ import 'package:parking_management/screens/location_permission_screen.dart';
 import 'package:parking_management/screens/login_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:parking_management/screens/map_screen.dart';
+import 'package:parking_management/screens/onboarding_screen.dart';
 import 'package:parking_management/screens/profile_screen.dart';
 import 'package:parking_management/screens/slots_screen.dart';
 import 'package:parking_management/screens/splash_screen.dart';
@@ -38,7 +39,8 @@ class MyApp extends StatelessWidget {
             ), // Force AppBar color
           ),
         ),
-        home://MapScreen() 
+        home://const OnboardingScreen()
+        //MapScreen() 
         //const ProfileScreen()
             const SplashScreen()
         //const LocationPermissionScreen()

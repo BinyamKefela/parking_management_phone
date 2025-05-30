@@ -18,6 +18,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
+  bool _isLoading = false;
+  String backend_url = dotenv.env['backend_url']!.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             FormBuilderTextField(
               name: "email",
               decoration: InputDecoration(
-                labelText: "example@gmail.com",
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: const BorderSide(
+                    color: Color.fromARGB(255, 224, 233, 243),
+                  ),
+                ),
+                filled: true,
+                labelStyle: const TextStyle(
+                  color: Colors.grey, // Change label text color
+                  fontSize: 16,
+                ),
+                fillColor: const Color.fromARGB(255, 224, 233, 243),
+                labelText: "Email",
+                floatingLabelBehavior: FloatingLabelBehavior.never,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0.h)),
               ),
@@ -64,35 +79,37 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               onPressed: () async {
                 if (_formKey.currentState?.saveAndValidate() ?? false) {
+                  setState(() {
+                    _isLoading = true;
+                  });
                   final data = _formKey.currentState!.value;
                   final email = _formKey.currentState!.fields['email']!.value;
-                  try{
-                  final response = await http.post(
-                      Uri.parse(dotenv.env['backend_url'].toString() +
-                          r'/send_password_reset_email_phone'),
-                      body: {"email": email});
-                  if (response.statusCode == 200) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const VerificationScreen()));
-                  } else {
-                    AwesomeDialog(
-                      context: context,
-                      title: "error",
-                      dialogType: DialogType.error,
-                      desc:
-                          json.decode(response.body)['error'],
-                      animType: AnimType.topSlide,
-                      btnOk: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("ok")),
-                    ).show();
-                  }
-                  }
-                  catch(exception){
+                  try {
+                    final response = await http.post(
+                        Uri.parse(backend_url +
+                            r'/api/send_password_reset_email_phone'),
+                        body: {"email": email});
+                    if (response.statusCode == 200) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  VerificationScreen(email: email)));
+                    } else {
+                      AwesomeDialog(
+                        context: context,
+                        title: "error",
+                        dialogType: DialogType.error,
+                        desc: json.decode(response.body)['error'],
+                        animType: AnimType.topSlide,
+                        btnOk: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("ok")),
+                      ).show();
+                    }
+                  } catch (exception) {
                     AwesomeDialog(
                       context: context,
                       title: "error",
@@ -106,15 +123,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           },
                           child: Text("ok")),
                     ).show();
-
+                  } finally {
+                    setState(() {
+                      _isLoading = false;
+                    });
                   }
                   // Perform login here
                 } else {
                   debugPrint("Validation failed");
                 }
               },
-              child: const Text("send code",
-                  style: TextStyle(color: Colors.white, fontSize: 16)),
+              child: _isLoading
+                  ? Container(
+                      constraints: BoxConstraints(minHeight: 15.h),
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2.0,
+                      ),
+                    )
+                  : const Text("send code",
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
 
             SizedBox(height: 25.0.h),

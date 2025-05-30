@@ -37,7 +37,7 @@ class _SlotState extends State<Slot> {
                     borderRadius: BorderRadius.circular(100),
                     color: widget.slot['is_available']
                         ? Colors.green
-                        : Colors.blue),
+                        : Colors.red),
                 height: 10,
                 width: 10,
                 // margin: EdgeInsets.fromLTRB(  //Removed this margin
@@ -58,7 +58,7 @@ class _SlotState extends State<Slot> {
               Center(
                 child: Container(
                     height: 15,
-                    width: 30,
+                    width: 40,
                     child: widget.slot['is_available']
                         ? Text(
                             "available",
@@ -69,7 +69,7 @@ class _SlotState extends State<Slot> {
                                     : Colors.black),
                           )
                         : Image.asset(
-                            "assets/images/image.jpg")), //SvgPicture.asset(
+                            "assets/images/slot_booked.png")), //SvgPicture.asset(
                 //"assets/images/booked_slot.svg",
               ),
               Container(

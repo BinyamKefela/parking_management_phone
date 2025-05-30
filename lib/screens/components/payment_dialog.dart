@@ -2,6 +2,11 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:arifpay_flutter_sdk/arifpay_flutter_sdk.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:arifpay_flutter_sdk/Model/checkoutModel.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logger/logger.dart';
 
 class PaymentDialog extends StatefulWidget {
   final VoidCallback onCancel;
@@ -29,6 +34,7 @@ class PaymentDialog extends StatefulWidget {
 class _PaymentDialogState extends State<PaymentDialog> {
   TimeOfDay _arrivalTime = TimeOfDay.now();
   TimeOfDay? _leaveTime;
+  final arifpay_key = dotenv.env["arifpay_key"]!.toString();
 
   TimeOfDay addOneHour(TimeOfDay time) {
     final now = DateTime.now();
@@ -41,6 +47,35 @@ class _PaymentDialogState extends State<PaymentDialog> {
   void initState() {
     super.initState();
     _leaveTime = addOneHour(TimeOfDay.now());
+    doPayment();
+  }
+
+  Future<void> doPayment() async {
+    final arifPay = Arifpay(arifpay_key);
+    CheckoutModel checkoutModel = CheckoutModel(
+        cancelUrl: "https://error.com",
+        phone: "251977171807",
+        email: "email@ecample.com",
+        errorUrl: "https://error.com",
+        notifyUrl: "https://notify.com",
+        successUrl: "https://success.com",
+        paymentMethods: ["TELEBIRR"],
+        expireDate: "2025-09-09T00:00:00",
+        items: [
+          CheckoutItem(
+              name: "parking slot",
+              price: 1,
+              quantity: 1,
+              description: "this is a slot payment",
+              image: '')
+        ],
+        beneficiaries: [
+          Beneficiary(
+              accountNumber: "10002800001278", amount: 1, bank: "AWINETAA")
+        ],
+        lang: 'EN');
+    final responseUrl = await arifPay.initializePayment(checkoutModel);
+    print(r"payment response " + responseUrl.toString());
   }
 
   @override

@@ -31,7 +31,7 @@ class _AllZonesState extends State<AllZones> {
     const FavoritesScreen(),
     const ProfileScreen(),
     const ProfileScreen(),
-    const BookmarkScreen(),
+    const BookmarkScreen(bookmarks: [],),
   ];
 
   final List<dynamic> _predefinedLocations = [];

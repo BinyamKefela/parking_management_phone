@@ -60,7 +60,7 @@ class _ZoneDetailsState extends State<ZoneDetails> {
     _pages.add(const FavoritesScreen());
     _pages.add(const ProfileScreen());
     _pages.add(const ProfileScreen());
-    _pages.add(const BookmarkScreen());
+    _pages.add(const BookmarkScreen(bookmarks: [],));
 
     /*setState(() {
       images.clear();

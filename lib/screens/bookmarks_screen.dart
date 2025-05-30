@@ -5,7 +5,8 @@ import 'package:parking_management/screens/components/favorites_card.dart';
 import 'package:parking_management/screens/components/ongoing_card.dart';
 
 class BookmarkScreen extends StatefulWidget {
-  const BookmarkScreen({super.key});
+  final List<dynamic> bookmarks;
+  const BookmarkScreen({super.key,required this.bookmarks});
 
   @override
   State<BookmarkScreen> createState() => _BookmarkScreenState();

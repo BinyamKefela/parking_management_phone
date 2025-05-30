@@ -4,7 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:parking_management/screens/components/authentication_widget.dart';
 
 class VerificationScreen extends StatefulWidget {
-  const VerificationScreen({super.key});
+  final String email;
+  const VerificationScreen({super.key, required this.email});
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -77,7 +78,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         decoration: InputDecoration(
           counterText: "",
           filled: true,
-          fillColor: const Color.fromRGBO(133, 143, 154, 1),
+          fillColor: const Color.fromARGB(255, 224, 233, 243),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,

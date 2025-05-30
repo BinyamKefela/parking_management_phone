@@ -34,7 +34,9 @@ class _MapScreenState extends State<MapScreen> {
     const FavoritesScreen(),
     const ProfileScreen(),
     const ProfileScreen(),
-    const BookmarkScreen(),
+    const BookmarkScreen(
+      bookmarks: [],
+    ),
   ];
   String? _distance;
   Timer? _timer;
@@ -401,7 +403,7 @@ class _MapScreenState extends State<MapScreen> {
                                       .toString(),
                                   timeDistance: (_nearestLocations[index]
                                                   ['distance'] /
-                                              60)
+                                              (40 * 60))
                                           .toStringAsFixed(2) +
                                       r'min',
                                   distance: ((_nearestLocations[index]
